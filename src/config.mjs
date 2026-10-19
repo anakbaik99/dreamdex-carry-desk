@@ -1,3 +1,5 @@
+import { fileURLToPath } from 'node:url';
+
 /**
  * Runtime configuration. Every value can be overridden by an environment variable so the bot can be
  * pointed at a different environment without editing source.
@@ -37,7 +39,8 @@ export const CONFIG = {
   maxDrawdownPct: Number(process.env.DD_MAX_DRAWDOWN_PCT ?? 15),
   // Path to the execution adapters. They drive the app ticket, which signs through the app's
   // own Privy session; a locally signed Safe transaction reverts GS026 on this chain.
-  workspace: process.env.DD_WORKSPACE ?? '/home/ubuntu/scripts/dreamdex',
+  // Defaults to the adapters vendored in this repository; override to point at another checkout.
+  workspace: process.env.DD_WORKSPACE ?? fileURLToPath(new URL('../adapters', import.meta.url)),
   // Seconds to wait between two order placements, so the app UI settles between fills.
   orderSpacingSec: Number(process.env.DD_ORDER_SPACING_SEC ?? 8),
 

@@ -35,12 +35,19 @@ against the venue.
 
 ## How to run it
 
-Requirements: Node.js 20+, and a dreamDEX account that can trade perps on Somnia Tokyo testnet.
+Requirements:
+
+- Node.js 20+
+- A dreamDEX account that can trade perps on Somnia Tokyo testnet
+- A Chromium instance running with remote debugging, with that account already signed in to
+  `app.testnet.dreamdex.io` — orders are signed by the app's own Privy session, so the browser is
+  the signer. See [`docs/RUNNING.md`](docs/RUNNING.md) for the exact setup.
 
 ```bash
-git clone <this repo>
+git clone https://github.com/anakbaik99/dreamdex-carry-desk
 cd dreamdex-carry-desk
-npm install          # no runtime dependencies; this only checks the toolchain
+npm install
+npx playwright install chromium      # only needed if the browser is launched by Playwright
 
 export DD_ACCOUNT=0x...            # your dreamDEX smart wallet address
 
@@ -110,7 +117,9 @@ src/planner.mjs     pure planner: ranked candidates + current book -> ordered in
 src/executor.mjs    order-ticket adapters (open / close / protect) and result parsing
 src/ledger.mjs      append-only JSONL ledger
 src/cli.mjs         the command surface
+adapters/           the order-ticket drivers the executor shells out to (Playwright)
 docs/ARCHITECTURE.md  design notes and the venue constraints that shaped them
+docs/RUNNING.md       browser prerequisite and why the app is the signer
 docs/EVIDENCE.md      live order evidence
 ```
 

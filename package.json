@@ -16,6 +16,10 @@
     "status": "node src/cli.mjs status",
     "plan": "node src/cli.mjs plan",
     "run": "node src/cli.mjs run",
-    "report": "node src/cli.mjs report"
+    "report": "node src/cli.mjs report",
+    "browser:install": "playwright install chromium"
+  },
+  "dependencies": {
+    "playwright": "^1.49.0"
   }
 }
