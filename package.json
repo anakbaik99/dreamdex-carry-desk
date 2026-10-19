@@ -1,0 +1,21 @@
+{
+  "name": "dreamdex-carry-desk",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Funding-aware perps position manager for dreamDEX on Somnia Tokyo testnet",
+  "engines": {
+    "node": ">=20"
+  },
+  "bin": {
+    "carrydesk": "./src/cli.mjs"
+  },
+  "scripts": {
+    "doctor": "node src/cli.mjs doctor",
+    "scan": "node src/cli.mjs scan",
+    "status": "node src/cli.mjs status",
+    "plan": "node src/cli.mjs plan",
+    "run": "node src/cli.mjs run",
+    "report": "node src/cli.mjs report"
+  }
+}
