@@ -80,8 +80,11 @@ async function loadUniverse() {
 }
 
 /**
- * Account equity and free margin are not on the indexer, so they are read from the venue through
- * the existing account reader. `--equity` / `--free-margin` override it for offline planning.
+ * Account equity and free margin are not on the indexer — the app reads them from the venue's
+ * account API. Rather than duplicate that call, this runs the account adapter, which reads the same
+ * numbers the app renders through the signed-in browser session.
+ *
+ * `--equity` / `--free-margin` override it, so a plan can be produced offline.
  */
 async function loadAccount() {
   const equityFlag = flag('equity');
@@ -95,8 +98,7 @@ async function loadAccount() {
     };
   }
 
-  const account = CONFIG.account;
-  if (!account) {
+  if (!CONFIG.account) {
     throw new Error(
       'no account: set DD_ACCOUNT to the smart wallet address, or pass --equity and --free-margin',
     );
@@ -105,20 +107,17 @@ async function loadAccount() {
   try {
     const { stdout } = await run(
       process.execPath,
-      [`${CONFIG.workspace}/dd.mjs`, 'account', '--venue', 'hideki'],
-      { timeout: 120_000, maxBuffer: 8 * 1024 * 1024 },
+      [`${CONFIG.workspace}/read-account.mjs`, '--region', CONFIG.region],
+      { timeout: 180_000, maxBuffer: 8 * 1024 * 1024 },
     );
-    const grab = (label) => {
-      const m = new RegExp(`${label}\\s*:\\s*([0-9.]+)`, 'i').exec(stdout);
-      return m ? Number(m[1]) : null;
-    };
-    const equity = grab('equity');
-    const freeMargin = grab('withdrawable');
-    if (!(equity > 0)) throw new Error('could not parse equity from dd.mjs account');
+    const line = stdout.trim().split('\n').filter(Boolean).pop();
+    const parsed = JSON.parse(line);
+    if (!(parsed.equity > 0)) throw new Error(parsed.reason ?? 'account panel did not render');
     return {
-      equity,
-      freeMargin: freeMargin ?? 0,
-      source: 'dd.mjs account --venue hideki',
+      equity: Number(parsed.equity),
+      // `Available to trade` is what the venue will actually let a new order consume.
+      freeMargin: Number(parsed.available ?? 0),
+      source: 'adapters/read-account.mjs',
       realisedPnl: 0,
     };
   } catch (err) {

@@ -80,10 +80,15 @@ browser width first.
 ## Order lifecycle
 
 ```
-scan   indexer only        no browser, no session
-plan   indexer + account   no browser
-run    indexer + account + browser
+scan   indexer only                     no browser, no session
+plan   indexer + account panel          browser, unless --equity/--free-margin are passed
+status indexer + account panel          browser, unless --equity/--free-margin are passed
+run    indexer + account + order ticket browser
 ```
+
+`plan` and `status` read equity and free margin from the app's account panel through
+`adapters/read-account.mjs`, because the indexer does not expose them. Pass `--equity <n>
+--free-margin <n>` to produce a plan with no browser at all.
 
 A full `run --live` cycle that opens one position and attaches protection takes roughly 60-120
 seconds: the ticket needs time to arm, and the venue's own confirmation modal has to settle.
