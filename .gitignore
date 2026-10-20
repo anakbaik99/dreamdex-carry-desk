@@ -5,3 +5,6 @@ data/
 .DS_Store
 demo/frames/
 demo/check/
+__pycache__/
+*.pyc
+demo/raw/*.err

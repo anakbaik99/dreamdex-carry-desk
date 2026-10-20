@@ -42,15 +42,19 @@ LH = 22
 PAD = 26
 TOP = 96
 
-ADDRESS = "0xf428a46db589878bedebbb4b8a1dbb0854e92f26"
-MASKED = "0xf428…f26"
+ADDRESS_MASK = re.compile(r"0x[0-9a-fA-F]{40}")
+
+
+def mask(text):
+    """Mask any 40-hex address, so a captured transcript can never publish a wallet."""
+    return ADDRESS_MASK.sub(lambda m: m.group(0)[:6] + "…" + m.group(0)[-3:], text)
 
 
 def load(name, keep=None):
     p = RAW / f"{name}.txt"
     if not p.exists():
         sys.exit(f"missing raw output: {p}")
-    lines = p.read_text().replace(ADDRESS, MASKED).replace(ADDRESS.upper(), MASKED).splitlines()
+    lines = mask(p.read_text()).splitlines()
     if keep is not None:
         lines = lines[:keep]
     return lines
