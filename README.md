@@ -93,6 +93,22 @@ node src/cli.mjs run --live --tp 3 --sl 3   # place the orders
 
 `run` is a dry run unless `--live` is passed. Every action is appended to `data/ledger.jsonl`.
 
+`doctor` from a fresh clone, with no `node_modules` and `DD_WORKSPACE` unset:
+
+```
+doctor
+------------------------
+  chain          : 50383 (tokyo)
+  indexer        : ok
+  perp markets   : 21
+  open positions : 5
+  account        : 0xf428a46db589878bedebbb4b8a1dbb0854e92f26
+  workspace      : /path/to/dreamdex-carry-desk/adapters
+  adapter perp-ui-order.mjs     : present
+  adapter perp-ui-close.mjs     : present
+  adapter perp-ui-tpsl.mjs      : present
+```
+
 ### Configuration
 
 All settings are environment variables with documented defaults; see `src/config.mjs`.
