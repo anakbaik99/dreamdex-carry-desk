@@ -1,14 +1,43 @@
 # Evidence of building
 
-All activity below is on **Somnia Tokyo testnet**, dreamDEX perps, chain **50383**, region `tokyo`,
-collateral `USDso`. This is testnet paper money.
+All activity is on **Somnia Tokyo testnet** — dreamDEX perps, chain **50383**, app region `tokyo`,
+collateral `USDso`. Testnet paper money.
 
-## Cycle 1 — 2026-10-19T19:55Z
+Two complete cycles are recorded below, including the close path: the take-profit that this tool
+attached was triggered by the venue and the position closed at +89.60 USDso.
 
-The scan ranked 21 perp markets by realised funding over a 7-day lookback. The top candidates the
-book did not already hold were LIT (long, 33.43% annualised) and BNB (short, 19.64%). The planner
-sized a single position at the per-position cap because the account was already near its gross
-exposure ceiling; it emitted exactly one intent.
+## Transaction hashes
+
+```
+open   LIT-PERP long   2026-10-19T19:55:21Z  block 27878806
+       0x2aa8406c2c5978e1409bf79e102dbed000a0c47a281c331d4c0d950e012a7fdb
+
+close  LIT-PERP (TP)   2026-10-19T23:38:30Z  block 28012607
+       0x5d8fab861ebde05699771f60ba62e268e6fdd837d572aabb5c6464ed10fc1962
+
+TP/SL  2 stop orders created (same tx as the triggers below)
+       0x19cf0c18ee2782b31baa06e041a7a43a6c66e923991e1238faeb9d5a23f62781
+```
+
+**There is no public block explorer for chain 50383.** `shannon-explorer.somnia.network` and
+`explorer.testnet.somnia.network` both serve chain 50312 and answer `Transaction not found` for
+these hashes. Each hash is verifiable against the venue's own RPC, which is what the block numbers
+above came from:
+
+```bash
+curl -s -X POST https://api.hideki2.infra.testnet.somnia.network \
+  -H 'content-type: application/json' \
+  --data '{"jsonrpc":"2.0","id":1,"method":"eth_getTransactionByHash",
+           "params":["0x2aa8406c2c5978e1409bf79e102dbed000a0c47a281c331d4c0d950e012a7fdb"]}'
+```
+
+Returns `blockNumber: 0x1a96596` (27878806), `from` the smart wallet's owner, `to` the position
+contract. The same call on `api.infra.testnet.somnia.network` (chain 50312) returns `null`, which is
+how the chain attribution was confirmed.
+
+## Cycle 1 — open
+
+Scan ranked 21 perp markets by realised funding over a 7-day window:
 
 ```
 $ node src/cli.mjs scan
@@ -19,7 +48,8 @@ $ node src/cli.mjs scan
   ...
 ```
 
-### Order placed
+LIT was the best candidate not already in the book, and its funding was negative — shorts pay longs,
+so the collecting side was **long**.
 
 ```
 $ node src/cli.mjs run --live --tp 3 --sl 3
@@ -28,10 +58,7 @@ run — 50383 tokyo LIVE
         protect LIT-PERP     tp=3% sl=3%  FAIL
 ```
 
-The open succeeded. The protect step failed on the first attempt; the cause and the fix are under
-"Execution bugs found and fixed" below.
-
-The ticket's own preview, returned by the adapter before submitting:
+Ticket preview returned by the adapter before submitting:
 
 ```
 ORDER_PREVIEW LIT-PERP long market qty=3052.36 value=3052.32 margin=625.77 mark=3.0127
@@ -39,55 +66,76 @@ submit "long LIT"   : rendered, disabled=false
 ORDER_SUBMITTED LIT-PERP long market qty=3052.36 positions=7
 ```
 
-Position as the indexer reports it afterwards:
+On-chain, from `PerpPositionChange`:
 
 ```
-LIT-PERP  long  1008.80 LIT  entry 3.0129  mark 3.0117  notional 3038.23  uPnL -1.14
+2026-10-19T19:55:21Z  LIT  OPEN      0 -> 332.1 LIT       entry 3.0117
+2026-10-19T19:55:21Z  LIT  INCREASE  332.1 -> 996.4 LIT   entry 3.01283
+2026-10-19T19:55:21Z  LIT  INCREASE  996.4 -> 1008.8 LIT  entry 3.01286
+tx 0x2aa8406c2c5978e1409bf79e102dbed000a0c47a281c331d4c0d950e012a7fdb  block 27878806
 ```
+
+Three fills inside one transaction: the market order swept three price levels.
 
 ### Protection attached
 
-Retried through the fixed adapter:
+The first protect attempt failed (adapter bug, fixed since — see below). Retry:
 
 ```
 TPSL_PREVIEW LIT-PERP tp=3 sl=3 est_profit=+115.84 est_loss=-115.88 submit_button_disabled=false
 TPSL_POST_SUBMIT {"modals":["Success: 2 triggers set 0.15 STT per trigger, refunded on cancel."]}
 ```
 
-Confirmed independently against the venue's `StopOrder` table rather than the dialog text:
+Confirmed against the venue's `StopOrder` table, not the dialog text:
 
 ```
-LIT  1792444456  PENDING  trigger=2922500000000000000   (2.9225 — stop loss, -3%)
-LIT  1792444456  PENDING  trigger=3103200000000000000   (3.1032 — take profit, +3%)
+LIT  PENDING  trigger 2.9225   <- stop loss,   -3%
+LIT  PENDING  trigger 3.1032   <- take profit, +3%
+tx 0x19cf0c18ee2782b31baa06e041a7a43a6c66e923991e1238faeb9d5a23f62781
 ```
 
-Two pending triggers on the venue for the position this tool opened.
+## Cycle 2 — the take-profit fires
 
-### Ledger
+At 23:38:30Z the venue triggered the take-profit the tool had attached:
 
-`data/ledger.jsonl` (gitignored) holds one JSON line per decision:
-
-```json
-{"ts":"2026-10-19T19:55:29.724Z","chainId":50383,"region":"tokyo","event":"open","pair":"LIT-PERP","side":"long","notional":3052.3601658,"carryPct":33.433690111050026,"ok":true,"value":3052.32,"margin":625.77}
-{"ts":"2026-10-19T19:55:30.981Z","chainId":50383,"region":"tokyo","event":"protect","pair":"LIT-PERP","ok":false,"tp":"3","sl":"3"}
-{"ts":"2026-10-19T19:55:38.983Z","chainId":50383,"region":"tokyo","event":"run"}
+```
+LIT  TRIGGERED  trigger 3.1032
+LIT  CANCELLED  trigger 2.9225      (sibling cancelled, as designed)
 ```
 
-## Execution bugs found and fixed while building this
+Position changes in the closing transaction:
 
-Both were found by running the tool against the live app, not by reading code.
+```
+2026-10-19T23:38:30Z  LIT  REDUCE  1008.8 -> 686.5 LIT   exit 3.1022  pnl +28.7951
+2026-10-19T23:38:30Z  LIT  REDUCE   686.5 -> 42.0 LIT   exit 3.1016  pnl +57.1945
+2026-10-19T23:38:30Z  LIT  CLOSE     42.0 -> 0 LIT      exit 3.0988  pnl  +3.6096
+tx 0x5d8fab861ebde05699771f60ba62e268e6fdd837d572aabb5c6464ed10fc1962  block 28012607
+realised: +89.5992 USDso on 3,052.36 notional  (+2.94%)
+```
+
+The order was opened by this tool, protected by this tool, and closed by the trigger this tool
+attached — all three verifiable on chain.
+
+## What this is not
+
+This is **not** a hedged carry strategy. A long with a 3% stop is a directional position that is
+paid to exist. At 33%/yr the funding is roughly 0.09%/day against a 3% stop, so price movement
+dominates PnL — as the result shows: +89.60 came from a 2.9% price move, not from funding. The
+honest description is *funding-tilted*, not *carry without risk*. A hedged version would need a
+second leg on the same underlying, which this venue does not currently offer as a perp pair.
+
+## Execution bugs found and fixed
+
+Both were found by running against the live app.
 
 **1. The Positions panel hides the TP/SL control below a desktop width.**
-The app renders two variants of every position row: a table row that carries `Set TP/SL`, and a card
-that carries only Share and Close. Below roughly 1536px the table row is `display: none`, so the
-TP/SL button still exists in the DOM with a `0x0` box and every click fails with
-`no bounding box for locator`. Fix: force a 1920x1080 viewport, and re-assert it after navigation
-because the override is dropped on a full page load.
+The app renders two variants of every position row: a table row carrying `Set TP/SL`, and a card
+carrying only Share and Close. Below roughly 1536px the table row is `display: none`, so the control
+exists in the DOM with a `0x0` box and every click fails with `no bounding box for locator`.
+Fix: force a 1920x1080 viewport, and re-assert it after navigation (the override is dropped by a
+full page load). This fix is in `adapters/perp-ui-tpsl.mjs` in this repository.
 
 **2. `[aria-label="Set TP/SL"].first()` targets the wrong position.**
-The positions table lists every open position, so the label matches one control per row. Taking
-`.first()` opens whichever row sorts first — a run asked for LIT opened the NEAR dialog instead.
-Fix: tag the control whose tightest containing ancestor names the requested pair, and click that.
-
-Both fixes live in the order-ticket adapter, not in this repository, because that is where the
-venue's UI-specific behaviour belongs.
+The table lists every open position, so the label matches one control per row. `.first()` opens
+whichever row sorts first — a run asked for LIT opened the NEAR dialog instead. Fix: tag the control
+whose tightest containing ancestor names the requested pair. Also in `adapters/perp-ui-tpsl.mjs`.

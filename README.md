@@ -5,9 +5,14 @@ A funding-aware perps position manager for **dreamDEX on Somnia Tokyo testnet**.
 Perps venues pay the side that is not crowding the book. On dreamDEX that payment is settled
 hourly against a funding index, and on most markets it flows in one direction for days at a time:
 longs pay shorts. CarryDesk reads that history from the venue's own indexer, ranks every perp market
-by realised funding yield, and maintains a book that sits on the collecting side — with the sizing,
-exposure caps and kill switch that keep a carry trade from quietly turning into a leveraged
-directional bet.
+by realised funding yield, and holds the side that is being paid — with account-level sizing,
+exposure caps and a kill switch.
+
+**What this is not.** It is not a hedged carry book. Each leg is a directional position that happens
+to be paid to exist: at 30%/yr the funding is about 0.09%/day, while the stop sits 3% away, so price
+movement dominates PnL. The honest description is *funding-tilted*, not *risk-free carry*. Hedging
+would need a second leg on the same underlying, which this venue does not currently list as a perp
+pair.
 
 Built for the **dreamDEX Perps Builder Bounty**, MVP track (bots and agents).
 
@@ -100,11 +105,15 @@ the resulting positions recorded in [`docs/EVIDENCE.md`](docs/EVIDENCE.md).
 
 ## X posts
 
-<!-- Fill in after publishing. The bounty requires 2-3 posts tagging @DreamDEXSomnia. -->
+Drafts for all three posts, with the source of every number, are in
+[`docs/X-POSTS.md`](docs/X-POSTS.md). Published links go here:
 
-- [ ] post 1 — what CarryDesk does and the funding edge it targets
-- [ ] post 2 — a live order on Tokyo testnet with the transaction hash
-- [ ] post 3 — how the risk model sizes a cross-margined carry book
+- [ ] post 1 — what CarryDesk does and why funding is the edge
+- [ ] post 2 — a live order that hit its take-profit, with both transaction hashes
+- [ ] post 3 — how the risk model sizes a cross-margined book
+
+> Pending: the bounty requires 2-3 published posts tagging `@DreamDEXSomnia`. The drafts are ready;
+> the links will be added here as they are published.
 
 ## Repository layout
 
