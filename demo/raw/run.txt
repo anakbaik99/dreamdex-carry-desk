@@ -3,8 +3,9 @@ dry run — pass --live to place orders
 
 plan
 ------------------------
-  equity 4896.00  free margin 1533.38
+  equity 4727.31  free margin 1356.05
   slots 4  gross cap 150%  per-position cap 60%
+  !! over gross cap: 1422% vs 150% — no new entries until the book is back under the cap
 
 open
 ------------------------
@@ -13,11 +14,11 @@ open
 keep
 ------------------------
   PAIR       SIDE   NOTIONAL  CARRY/yr  DAILY  
-  BTC-PERP   short  18558.23  82.99%    42.1948
-  XRP-PERP   short  4403.14   4.61%     0.5557 
-  HYPE-PERP  short  11312.59  9.71%     3.0084 
-  ETH-PERP   short  16516.86  10.92%    4.9424 
-  SOL-PERP   short  16207.57  9.12%     4.0512 
+  BTC-PERP   short  18645.05  84.49%    43.1591
+  XRP-PERP   short  4411.23   4.56%     0.5509 
+  HYPE-PERP  short  11345.22  9.70%     3.0149 
+  ETH-PERP   short  16573.08  10.93%    4.9608 
+  SOL-PERP   short  16225.77  9.12%     4.0520 
 
 close
 ------------------------

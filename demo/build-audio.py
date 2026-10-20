@@ -19,6 +19,7 @@ import wave
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent
+RAW = ROOT / "raw"
 VO = ROOT / "vo"
 TIMELINE = ROOT / "timeline.json"
 VIDEO = ROOT / "carrydesk-demo.mp4"
@@ -29,16 +30,35 @@ PIPER = "/tmp/ttsenv/bin/piper"
 MODEL = "/tmp/voices/en_US-amy-medium.onnx"
 SR = 44100
 
-# One line per scene, matched on the command (or the title / end cards).
-NARRATION = {
-    "title": "CarryDesk. Funding-ranked perps.",
-    "node src/cli.mjs doctor": "Doctor checks the chain, the indexer, and twenty one perp markets.",
-    "node src/cli.mjs scan": "Scan ranks markets by settled funding. BTC pays eighty two percent, and the tool holds the paid side.",
-    "node src/cli.mjs status": "Status shows the book this account already carries: five shorts, gross near fourteen times equity.",
-    "node src/cli.mjs plan": "Plan is pure. Keep what pays, close what lost its edge, open nothing below the floor.",
-    "node src/cli.mjs run": "Run repeats it as a dry run. No order is sent in this recording.",
-    "end": "The orders behind this tool, and the trigger that closed one, are on chain.",
-}
+# Narration is built from the same capture the picture comes from, so the spoken numbers and the
+# screen can never disagree. A hardcoded percentage drifts the moment the market moves.
+def scene_facts():
+    scan = (RAW / "scan.txt").read_text()
+    status = (RAW / "status.txt").read_text()
+    top = re.search(r"^\s+([A-Z0-9]+-PERP)\s+\w+\s+[\d.]+\s+([\d.]+)%", scan, re.M)
+    gross = re.search(r"\((\d+)% of equity\)", status)
+    shorts = len(re.findall(r"^\s+[A-Z0-9]+-PERP\s+short\s", status, re.M))
+    return {
+        "pair": top.group(1).split("-")[0] if top else "the top market",
+        "carry": round(float(top.group(2))) if top else None,
+        "gross_x": round(float(gross.group(1)) / 100) if gross else None,
+        "shorts": shorts,
+    }
+
+
+def build_narration():
+    f = scene_facts()
+    carry = f"{f['carry']} percent annualised" if f["carry"] else "the top rate"
+    gross = f"around {f['gross_x']} times equity" if f["gross_x"] else "well above equity"
+    return {
+        "title": "CarryDesk. Funding-ranked perps.",
+        "node src/cli.mjs doctor": "Doctor checks the chain, the indexer, and twenty one perp markets.",
+        "node src/cli.mjs scan": f"Scan ranks by settled funding. {f['pair']} pays about {carry}; the tool holds the paid side.",
+        "node src/cli.mjs status": f"Status shows the book this account already carries: {f['shorts']} shorts, gross {gross}.",
+        "node src/cli.mjs plan": "Plan is pure. Keep what pays, close what lost its edge, open nothing below the floor.",
+        "node src/cli.mjs run": "Run repeats it as a dry run. No order is sent in this recording.",
+        "end": "The orders behind this tool, and the trigger that closed one, are on chain.",
+    }
 
 
 def run(cmd, **kw):
@@ -98,6 +118,7 @@ def write_wav_mono(path, samples):
 
 
 def main():
+    NARRATION = build_narration()
     tl = json.loads(TIMELINE.read_text())
     total = tl["duration"]
     n = int(total * SR) + SR // 10

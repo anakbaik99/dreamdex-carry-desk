@@ -1,6 +1,6 @@
 {
   "fps": 30,
-  "duration": 40.633,
+  "duration": 40.867,
   "markets": 21,
   "scenes": [
     {
@@ -33,25 +33,25 @@
     {
       "kind": "scene",
       "start": 15.0,
-      "end": 22.867,
+      "end": 22.967,
       "cmd": "node src/cli.mjs status",
       "type_seconds": 0.69,
-      "lines": 19,
+      "lines": 20,
       "caption": true
     },
     {
       "kind": "scene",
-      "start": 22.867,
-      "end": 30.0,
+      "start": 22.967,
+      "end": 30.233,
       "cmd": "node src/cli.mjs plan",
       "type_seconds": 0.63,
-      "lines": 22,
+      "lines": 23,
       "caption": false
     },
     {
       "kind": "scene",
-      "start": 30.0,
-      "end": 35.033,
+      "start": 30.233,
+      "end": 35.267,
       "cmd": "node src/cli.mjs run",
       "type_seconds": 0.6,
       "lines": 9,
@@ -59,8 +59,8 @@
     },
     {
       "kind": "end",
-      "start": 35.033,
-      "end": 40.633,
+      "start": 35.267,
+      "end": 40.867,
       "cmd": null,
       "type_seconds": null,
       "lines": null,

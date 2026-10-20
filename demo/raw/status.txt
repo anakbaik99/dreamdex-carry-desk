@@ -1,19 +1,20 @@
 
 status — 50383 tokyo
 ------------------------
-  equity          : 4880.89 USDso
-  free margin     : 1517.51
-  gross exposure  : 66998.39  (1373% of equity)
-  net exposure    : -66998.39
-  unrealised PnL  : 235.74
-  funding received: -68.07 (7d)
-  shock buffer    : 2.3%
+  equity          : 4698.09 USDso
+  free margin     : 1325.37
+  gross exposure  : 67200.35  (1430% of equity)
+  net exposure    : -67200.35
+  unrealised PnL  : 33.78
+  funding received: -68.07 (7d, last settled 2026-10-20 00:19Z)
+  shock buffer    : 2.0%
+  !! over gross cap: 1430% vs 150% — the cap gates new entries only; it does not force an existing book down
 
 positions
 ------------------------
-  PAIR       SIDE   QTY          ENTRY       MARK        NOTIONAL  uPnL    CARRY/yr  ACTION
-  BTC-PERP   short  0.227800     82230.9102  81467.1960  18558.23  173.97  82.99%    hold  
-  XRP-PERP   short  3393.700000  1.3044      1.2974      4403.14   23.53   4.61%     hold  
-  HYPE-PERP  short  143.450000   78.9836     78.8608     11312.59  17.61   9.71%     hold  
-  ETH-PERP   short  6.903100     2408.6706   2392.6733   16516.86  110.43  10.92%    hold  
-  SOL-PERP   short  154.430000   104.3694    104.9509    16207.57  -89.80  9.12%     hold  
+  PAIR       SIDE   QTY          ENTRY       MARK        NOTIONAL  uPnL     CARRY/yr  ACTION
+  BTC-PERP   short  0.227800     82230.9102  81848.3478  18645.05  87.15    84.49%    hold  
+  XRP-PERP   short  3393.700000  1.3044      1.2998      4411.23   15.45    4.56%     hold  
+  HYPE-PERP  short  143.450000   78.9836     79.0883     11345.22  -15.02   9.70%     hold  
+  ETH-PERP   short  6.903100     2408.6706   2400.8164   16573.08  54.22    10.93%    hold  
+  SOL-PERP   short  154.430000   104.3694    105.0688    16225.77  -108.00  9.12%     hold  
