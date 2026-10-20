@@ -15,6 +15,7 @@
  * reverts GS026.
  */
 import { execFile } from 'node:child_process';
+import { relative, isAbsolute } from 'node:path';
 import { promisify } from 'node:util';
 import { CONFIG, pairOf } from './config.mjs';
 import {
@@ -167,7 +168,9 @@ async function cmdDoctor() {
   console.log(`  perp markets   : ${out.markets}`);
   console.log(`  open positions : ${out.positions}`);
   console.log(`  account        : ${CONFIG.account || '(unset)'}`);
-  console.log(`  workspace      : ${CONFIG.workspace}`);
+  const wsRel = relative(process.cwd(), CONFIG.workspace);
+  const wsDisplay = isAbsolute(wsRel) || wsRel.startsWith('..') ? CONFIG.workspace : `./${wsRel}`;
+  console.log(`  workspace      : ${wsDisplay}`);
   for (const [k, v] of Object.entries(out.adapters)) console.log(`  adapter ${pad(k, 22)}: ${v}`);
 }
 
