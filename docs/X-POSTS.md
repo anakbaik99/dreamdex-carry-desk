@@ -20,23 +20,25 @@ github.com/anakbaik99/dreamdex-carry-desk
 
 ## Post 2 — the full lifecycle, on chain
 
+Attachment: `demo/tx-hashes.png` (regenerate with `python3 demo/make-tx-card.py`; block numbers and
+timestamps in it are read back from the venue RPC, not copied from a note).
+
 ```
-One position, opened and then closed by its own trigger.
+One position, opened and closed by its own trigger.
 
-LIT-PERP long 3,052 USDso @ 3.0129. TP at 3.1032 fired on chain: +89.60 USDso.
+LIT-PERP long 3,052 USDso at 3.0129. TP 3.1032 filled on chain: +89.60 USDso.
 
-open  0x2aa8406c2c5978e1409bf79e102dbed0
-close 0x5d8fab861ebde05699771f60ba62e
+Three hashes, no explorer needed - verify against the venue RPC.
 
 @DreamDEXSomnia
 ```
 
-## Post 3 — the risk model
+## Post 3 — the gross cap, stated the way the code behaves
 
 ```
-dreamDEX perps are cross-margined: one margin bank per account, so a new position can liquidate an unrelated one.
+The cap gates new entries. It does not force an inherited book down - CarryDesk prints the breach instead of pretending the book is flat.
 
-CarryDesk sizes at account level: per-position cap, gross budget, free-margin floor, smallest wins. Reports a shock buffer, not a fake liq price.
+That cap is 150% of equity. The demo account sits well above it from positions CarryDesk did not open.
 
 @DreamDEXSomnia
 ```
@@ -54,6 +56,7 @@ Every number is checkable against this repository:
 | TP 3.1032 fired, +89.60 USDso | `docs/EVIDENCE.md`, step 2 |
 | open tx `0x2aa8406c…` / close tx `0x5d8fab86…` | `docs/EVIDENCE.md`, transaction hashes |
 | cross-margined, one margin bank per account | `docs/ARCHITECTURE.md` |
+| the cap gates new entries only | `src/cli.mjs`, the `over gross cap` line in `status` and `plan` |
 
 Two things not to claim in the posts:
 
