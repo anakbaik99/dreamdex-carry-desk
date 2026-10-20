@@ -44,6 +44,15 @@ That is the honest limitation of this build, and there is a documented way out: 
 from the loop. [`docs/EXECUTION.md`](docs/EXECUTION.md) explains the grant, what a linked bot may and
 may not do, and what switching costs.
 
+## Demo
+
+[![CarryDesk demo](demo/carrydesk-demo-poster.png)](demo/carrydesk-demo.mp4)
+
+37 seconds, recorded from a real run: `doctor`, `scan`, `status`, `plan`, then a dry `run`. No order
+is placed — `run` is dry unless `--live` is passed. The raw terminal output behind the recording is
+in [`demo/raw/`](demo/raw), and [`demo/render-demo.py`](demo/render-demo.py) rebuilds the video from
+it.
+
 ## Who it is for
 
 Perps traders who want the funding side of the market rather than a directional view, and bot

@@ -65,7 +65,10 @@ function table(rows, cols) {
   const widths = cols.map((c) => Math.max(c.h.length, ...rows.map((r) => String(c.get(r)).length)));
   const head = cols.map((c, i) => pad(c.h, widths[i])).join('  ');
   const body = rows.map((r) => cols.map((c, i) => pad(c.get(r), widths[i])).join('  ')).join('\n');
-  return `  ${head}\n  ${body}`;
+  return `  ${head}\n${body
+    .split('\n')
+    .map((l) => `  ${l}`)
+    .join('\n')}`;
 }
 
 // ---------------------------------------------------------------------------------------------
