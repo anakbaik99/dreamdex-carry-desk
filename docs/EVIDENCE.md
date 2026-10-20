@@ -119,6 +119,20 @@ Realised PnL is fully explained. The trigger swept three price levels, so the av
 That is 1.54 USDso below the theoretical gross at the trigger, entirely from exit slippage inside
 the trigger itself.
 
+**Re-measured on two other open positions (2026-10-20), the estimate is exact.** Both dry runs, no
+order submitted:
+
+```
+BTC-PERP short 0.2278 @ 82,230.9102, 3% TP
+  gross 0.2278 x 82,230.9102 x 3%  = 561.96    est_profit = +561.96    ratio 1.000
+XRP-PERP short 3,393.7 @ 1.3044, 3% TP
+  gross 3,393.7 x 1.3044 x 3%      = 132.79    est_profit = +132.97    ratio 1.001
+```
+
+So this is **not** a systematic multiplier: on these two positions the dialog reproduces the
+arithmetic to the cent. The LIT reading stands as a one-off outlier, recorded here as an observation
+rather than filed as a defect, because the cause could not be reproduced.
+
 ## Step 2 — the take-profit fires
 
 At 23:38:30Z the venue triggered the take-profit the tool had attached:

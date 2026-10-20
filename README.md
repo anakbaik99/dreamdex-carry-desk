@@ -102,7 +102,7 @@ doctor
   indexer        : ok
   perp markets   : 21
   open positions : 5
-  account        : 0xf428a46db589878bedebbb4b8a1dbb0854e92f26
+  account        : 0xf428…f26
   workspace      : /path/to/dreamdex-carry-desk/adapters
   adapter perp-ui-order.mjs     : present
   adapter perp-ui-close.mjs     : present
