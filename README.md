@@ -32,6 +32,11 @@ Reads come from the dreamDEX perps indexer (GraphQL). Writes go through the app'
 ticket, because on the Tokyo chain the local key is not an owner of the smart wallet and a locally
 signed Safe transaction reverts `GS026`.
 
+That is the honest limitation of this build, and there is a documented way out: the venue's
+**Link a Bot** flow grants a bot order rights per wallet and per market, which removes the browser
+from the loop. [`docs/EXECUTION.md`](docs/EXECUTION.md) explains the grant, what a linked bot may and
+may not do, and what switching costs.
+
 ## Who it is for
 
 Perps traders who want the funding side of the market rather than a directional view, and bot
@@ -129,6 +134,7 @@ src/cli.mjs         the command surface
 adapters/           the order-ticket drivers the executor shells out to (Playwright)
 docs/ARCHITECTURE.md  design notes and the venue constraints that shaped them
 docs/RUNNING.md       browser prerequisite and why the app is the signer
+docs/EXECUTION.md     UI execution vs the official Link a Bot operator path
 docs/EVIDENCE.md      live order evidence
 ```
 
