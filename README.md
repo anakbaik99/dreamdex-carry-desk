@@ -158,14 +158,13 @@ the resulting positions recorded in [`docs/EVIDENCE.md`](docs/EVIDENCE.md).
 ## X posts
 
 Drafts for all three posts, with the source of every number, are in
-[`docs/X-POSTS.md`](docs/X-POSTS.md). Published links go here:
+[`docs/X-POSTS.md`](docs/X-POSTS.md). Published:
 
-- [ ] post 1 — what CarryDesk does and why funding is the edge
-- [ ] post 2 — a live order that hit its take-profit, with both transaction hashes
-- [ ] post 3 — how the risk model sizes a cross-margined book
+- [post 1](https://x.com/something_base/status/2112427114708480225) — what CarryDesk does and why funding is the edge (with the demo video)
+- [post 2](https://x.com/something_base/status/2112427742730113202) — a live order that hit its take-profit, with all three transaction hashes
+- [post 3](https://x.com/something_base/status/2112428194435588195) — the gross cap gates new entries, it does not force an inherited book down
 
-> Pending: the bounty requires 2-3 published posts tagging `@DreamDEXSomnia`. The drafts are ready;
-> the links will be added here as they are published.
+Each post tags `@DreamDEXSomnia`.
 
 ## Repository layout
 
