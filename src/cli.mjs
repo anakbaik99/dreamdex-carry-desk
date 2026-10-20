@@ -231,11 +231,16 @@ async function cmdStatus() {
   const review = reviewBook(positions, ranked, CONFIG);
   const upnl = positions.reduce((s, p) => s + unrealisedPnl(p), 0);
   const funding = payments.reduce((s, p) => s + p.amount, 0);
+  const grossPct = (exposure.gross / account.equity) * 100;
+  const lastPaid = payments.length ? Math.max(...payments.map((p) => p.timestamp)) : 0;
+  const lastPaidLabel = lastPaid
+    ? `, last settled ${new Date(lastPaid * 1000).toISOString().slice(0, 16).replace('T', ' ')}Z`
+    : '';
 
   if (JSON_OUT) {
     return console.log(
       JSON.stringify(
-        { account, exposure, positions, review, unrealisedPnl: upnl, fundingReceived: funding },
+        { account, exposure, positions, review, unrealisedPnl: upnl, fundingReceived: funding, grossPct, lastFundingPaidAt: lastPaid || null },
         null,
         2,
       ),
@@ -248,8 +253,14 @@ async function cmdStatus() {
   console.log(`  gross exposure  : ${n2(exposure.gross)}  (${n2((exposure.gross / account.equity) * 100, 0)}% of equity)`);
   console.log(`  net exposure    : ${n2(exposure.net)}`);
   console.log(`  unrealised PnL  : ${n2(upnl)}`);
-  console.log(`  funding received: ${n2(funding)} (${CONFIG.lookbackDays}d)`);
+  console.log(`  funding received: ${n2(funding)} (${CONFIG.lookbackDays}d${lastPaidLabel})`);
   console.log(`  shock buffer    : ${n2(shockBufferPct(positions, account.equity), 1)}%`);
+  if (grossPct > CONFIG.grossExposurePct) {
+    console.log(
+      `  !! over gross cap: ${n2(grossPct, 0)}% vs ${CONFIG.grossExposurePct}% — ` +
+        'the cap gates new entries only; it does not force an existing book down',
+    );
+  }
 
   console.log(h('positions'));
   console.log(
@@ -290,6 +301,13 @@ async function cmdPlan() {
   console.log(h('plan'));
   console.log(`  equity ${n2(account.equity)}  free margin ${n2(account.freeMargin)}`);
   console.log(`  slots ${CONFIG.maxPositions}  gross cap ${CONFIG.grossExposurePct}%  per-position cap ${CONFIG.maxPositionPct}%`);
+  const planGrossPct = (plan.exposureBefore.gross / account.equity) * 100;
+  if (planGrossPct > CONFIG.grossExposurePct) {
+    console.log(
+      `  !! over gross cap: ${n2(planGrossPct, 0)}% vs ${CONFIG.grossExposurePct}% — ` +
+        'no new entries until the book is back under the cap',
+    );
+  }
 
   console.log(h('open'));
   console.log(

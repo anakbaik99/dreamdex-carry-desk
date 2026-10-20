@@ -232,20 +232,24 @@ def scan_scene_lines(rows_shown=8):
 def status_caption():
     """Build the status frame caption from the captured numbers, never from constants."""
     lines = load("status")
-    gross = pct = funding = None
+    gross = pct = funding = cap = last = None
     for line in lines:
         m = re.search(r"gross exposure\s*:\s*([\d.]+)\s*\((\d+)% of equity\)", line)
         if m:
             gross, pct = m.group(1), m.group(2)
-        m = re.search(r"funding received\s*:\s*(-?[\d.]+)", line)
+        m = re.search(r"funding received\s*:\s*(-?[\d.]+).*?last settled ([0-9-]+ [0-9:]+Z)", line)
         if m:
-            funding = m.group(1)
+            funding, last = m.group(1), m.group(2)
+        m = re.search(r"over gross cap:\s*\d+% vs (\d+)%", line)
+        if m:
+            cap = m.group(1)
     shorts = sum(1 for l in lines if re.match(r"^  [A-Z0-9]+-PERP\s+short\s", l))
     if not (gross and pct and funding is not None):
         return ["Captured from this account's existing book — nothing here is a live order."]
     return [
-        f"These {shorts} shorts were opened by this account's earlier sessions — nothing here is a live order.",
-        f"{pct}% is gross notional ({gross} USDso) ÷ equity on one cross-margined margin bank; funding received is {funding} USDso / 7d.",
+        f"These {shorts} shorts were opened outside CarryDesk, by other tooling on this account — not in this recording.",
+        f"{pct}% is gross notional ({gross} USDso) ÷ equity, above the {cap or '?'}% entry cap; "
+        f"funding received is {funding} USDso / 7d (last settled {last or 'n/a'}).",
     ]
 
 
