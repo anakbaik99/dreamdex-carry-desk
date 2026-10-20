@@ -8,3 +8,5 @@ demo/check/
 __pycache__/
 *.pyc
 demo/raw/*.err
+demo/vo/
+demo/mix.wav

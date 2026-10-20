@@ -2,26 +2,26 @@
 scan — 7d realised funding, floor 4%/yr
 ---------------------------------------
   PAIR           SIDE   MARK        CARRY/yr  RATE/8h   CONSIST  HOURS
-  BTC-PERP       short  81207.5741  82.35%    0.0752%   100%     478  
+  BTC-PERP       short  81467.1960  82.99%    0.0758%   100%     480  
   LIT-PERP       long   3.1217      31.84%    -0.0291%  88%      300  
-  BNB-PERP       short  724.4179    19.25%    0.0176%   100%     478  
-  WLD-PERP       short  0.5225      17.92%    0.0164%   100%     478  
-  NEAR-PERP      short  4.7858      15.15%    0.0138%   72%      478  
-  SUI-PERP       short  0.9761      12.90%    0.0118%   100%     478  
-  AVAX-PERP      short  9.4199      10.93%    0.0100%   100%     478  
-  LINK-PERP      short  11.8260     10.93%    0.0100%   100%     478  
-  XLM-PERP       short  0.1748      10.93%    0.0100%   100%     478  
-  TAO-PERP       short  262.8775    10.93%    0.0100%   100%     478  
-  DOGE-PERP      short  0.0784      10.93%    0.0100%   100%     478  
-  ADA-PERP       short  0.2147      10.93%    0.0100%   100%     478  
-  ETH-PERP       short  2385.5320   10.92%    0.0100%   100%     478  
+  BNB-PERP       short  728.0033    19.23%    0.0176%   100%     480  
+  WLD-PERP       short  0.5330      17.91%    0.0164%   100%     480  
+  NEAR-PERP      short  4.7973      15.14%    0.0138%   72%      480  
+  SUI-PERP       short  0.9887      12.89%    0.0118%   100%     480  
+  LINK-PERP      short  11.9373     10.92%    0.0100%   100%     480  
+  DOGE-PERP      short  0.0792      10.92%    0.0100%   100%     480  
+  TAO-PERP       short  266.1306    10.92%    0.0100%   100%     480  
+  AVAX-PERP      short  9.4910      10.92%    0.0100%   100%     480  
+  XLM-PERP       short  0.1765      10.92%    0.0100%   100%     480  
+  ADA-PERP       short  0.2166      10.92%    0.0100%   100%     480  
+  ETH-PERP       short  2392.6733   10.92%    0.0100%   100%     480  
   PUMP-PERP      short  0.0044      10.90%    0.0100%   100%     342  
   VVV-PERP       short  24.6391     10.83%    0.0099%   100%     300  
   1000PEPE-PERP  short  0.0042      10.82%    0.0099%   100%     300  
   ZRO-PERP       short  1.8731      10.80%    0.0099%   100%     303  
   ZEC-PERP       short  1145.8058   10.79%    0.0099%   100%     339  
-  HYPE-PERP      short  78.2832     9.71%     0.0089%   94%      478  
-  SOL-PERP       short  104.7423    9.12%     0.0083%   94%      480  
-  XRP-PERP       short  1.2854      4.60%     0.0042%   83%      478  
+  HYPE-PERP      short  78.8608     9.71%     0.0089%   94%      480  
+  SOL-PERP       short  104.9509    9.12%     0.0083%   94%      482  
+  XRP-PERP       short  1.2974      4.61%     0.0042%   83%      480  
 
   21 of 21 markets cleared the floor. A positive rate means longs pay shorts, so the book shorts a positive-carry market.

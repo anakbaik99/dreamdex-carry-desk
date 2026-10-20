@@ -6,7 +6,7 @@ doctor
   perp markets   : 21
   open positions : 5
   account        : 0xf428…f26
-  workspace      : /home/ubuntu/scripts/dreamdex-carry-desk/adapters
+  workspace      : ./adapters
   adapter perp-ui-order.mjs     : present
   adapter perp-ui-close.mjs     : present
   adapter perp-ui-tpsl.mjs      : present

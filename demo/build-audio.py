@@ -31,13 +31,13 @@ SR = 44100
 
 # One line per scene, matched on the command (or the title / end cards).
 NARRATION = {
-    "title": "CarryDesk. Funding-ranked perps on dreamDEX.",
+    "title": "CarryDesk. Funding-ranked perps.",
     "node src/cli.mjs doctor": "Doctor checks the chain, the indexer, and twenty one perp markets.",
     "node src/cli.mjs scan": "Scan ranks markets by settled funding. BTC pays eighty two percent, and the tool holds the paid side.",
-    "node src/cli.mjs status": "Status shows the book this account already carries. Five shorts, gross at thirteen times equity, and a two and a half percent shock buffer.",
+    "node src/cli.mjs status": "Status shows the book this account already carries: five shorts, gross near fourteen times equity.",
     "node src/cli.mjs plan": "Plan is pure. Keep what pays, close what lost its edge, open nothing below the floor.",
     "node src/cli.mjs run": "Run repeats it as a dry run. No order is sent in this recording.",
-    "end": "The orders behind this tool, and the trigger that closed one, are on chain. Evidence is in the repo.",
+    "end": "The orders behind this tool, and the trigger that closed one, are on chain.",
 }
 
 
@@ -62,21 +62,21 @@ def synth(text, out):
 
 
 def fit(src, dst, window):
-    """Speed the clip up if it overruns its window; never stretch it."""
+    """Speed the clip up only as far as it needs, and report the raw length too."""
     d = duration(src)
-    limit = max(0.8, window - 0.25)
+    limit = max(0.8, window - 0.15)
     tempo = d / limit
     if tempo <= 1.02:
         run(["ffmpeg", "-y", "-loglevel", "error", "-i", str(src), "-ar", str(SR), "-ac", "1", str(dst)])
-        return 1.0
-    tempo = min(tempo, 1.45)  # beyond this the voice sounds clipped
+        return d, 1.0
+    tempo = min(tempo, 1.30)  # beyond this the voice sounds clipped
     run(
         [
             "ffmpeg", "-y", "-loglevel", "error", "-i", str(src),
             "-filter:a", f"atempo={tempo:.4f}", "-ar", str(SR), "-ac", "1", str(dst),
         ]
     )
-    return tempo
+    return d, tempo
 
 
 def read_wav_mono(path):
@@ -121,10 +121,10 @@ def main():
         timed = VO / f"{idx:02d}.wav"
         synth(text, raw)
         window = sc["end"] - sc["start"]
-        tempo = fit(raw, timed, window)
+        raw_d, tempo = fit(raw, timed, window)
         start_at = sc["start"] + 0.12
         add(read_wav_mono(timed), start_at)
-        report.append((key, round(duration(timed), 2), round(window, 2), round(tempo, 3)))
+        report.append((key, round(raw_d, 2), round(window, 2), round(tempo, 3), round(duration(timed), 2)))
 
     # Keyboard bed: soft clicks while each command is typed.
     random.seed(7)
@@ -162,15 +162,16 @@ def main():
             "-map", "0:v:0", "-map", "1:a:0",
             "-c:v", "copy",
             "-af", "loudnorm=I=-16:TP=-1.5:LRA=11",
-            "-c:a", "aac", "-b:a", "128k",
+            "-c:a", "aac", "-b:a", "160k", "-ar", "48000",
             "-shortest", "-movflags", "+faststart",
             str(OUT),
         ]
     )
 
-    print(f"{'scene':32} {'vo':>6} {'window':>7} {'tempo':>6}")
-    for key, d, w, t in report:
-        print(f"{key:32} {d:>6.2f} {w:>7.2f} {t:>6.3f}")
+    print(f"{'scene':32} {'raw':>6} {'window':>7} {'tempo':>6} {'final':>6}")
+    for key, raw_d, w, t, fin in report:
+        flag = "  <-- over" if fin > w - 0.05 else ""
+        print(f"{key:32} {raw_d:>6.2f} {w:>7.2f} {t:>6.3f} {fin:>6.2f}{flag}")
     print(f"\nwrote {OUT}  {OUT.stat().st_size / 1e6:.2f} MB  ({duration(OUT):.2f}s)")
 
 

@@ -46,9 +46,9 @@ may not do, and what switching costs.
 
 ## Demo
 
-[![CarryDesk demo](demo/carrydesk-demo-poster.png)](demo/carrydesk-demo.mp4)
+[![CarryDesk demo](demo/carrydesk-demo-poster.png)](demo/carrydesk-demo-vo.mp4)
 
-37 seconds, recorded from a real run: `doctor`, `scan`, `status`, `plan`, then a dry `run`. No order
+Narrated, recorded from a real run: `doctor`, `scan`, `status`, `plan`, then a dry `run`. No order
 is placed — `run` is dry unless `--live` is passed. The raw terminal output behind the recording is
 in [`demo/raw/`](demo/raw), and [`demo/render-demo.py`](demo/render-demo.py) rebuilds the video from
 it.

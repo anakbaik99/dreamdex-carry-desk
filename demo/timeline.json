@@ -1,62 +1,70 @@
 {
   "fps": 30,
-  "duration": 37.5,
+  "duration": 40.633,
+  "markets": 21,
   "scenes": [
     {
       "kind": "title",
       "start": 0.0,
-      "end": 2.8,
+      "end": 3.2,
       "cmd": null,
       "type_seconds": null,
-      "lines": null
+      "lines": null,
+      "caption": false
     },
     {
       "kind": "scene",
-      "start": 2.8,
-      "end": 7.867,
+      "start": 3.2,
+      "end": 8.467,
       "cmd": "node src/cli.mjs doctor",
       "type_seconds": 0.69,
-      "lines": 12
+      "lines": 12,
+      "caption": false
     },
     {
       "kind": "scene",
-      "start": 7.867,
-      "end": 13.967,
+      "start": 8.467,
+      "end": 15.0,
       "cmd": "node src/cli.mjs scan",
       "type_seconds": 0.63,
-      "lines": 13
+      "lines": 15,
+      "caption": false
     },
     {
       "kind": "scene",
-      "start": 13.967,
-      "end": 21.333,
+      "start": 15.0,
+      "end": 22.867,
       "cmd": "node src/cli.mjs status",
       "type_seconds": 0.69,
-      "lines": 19
+      "lines": 19,
+      "caption": true
     },
     {
       "kind": "scene",
-      "start": 21.333,
-      "end": 28.467,
+      "start": 22.867,
+      "end": 30.0,
       "cmd": "node src/cli.mjs plan",
       "type_seconds": 0.63,
-      "lines": 22
+      "lines": 22,
+      "caption": false
     },
     {
       "kind": "scene",
-      "start": 28.467,
-      "end": 33.3,
+      "start": 30.0,
+      "end": 35.033,
       "cmd": "node src/cli.mjs run",
       "type_seconds": 0.6,
-      "lines": 9
+      "lines": 9,
+      "caption": false
     },
     {
       "kind": "end",
-      "start": 33.3,
-      "end": 37.5,
+      "start": 35.033,
+      "end": 40.633,
       "cmd": null,
       "type_seconds": null,
-      "lines": null
+      "lines": null,
+      "caption": false
     }
   ]
 }

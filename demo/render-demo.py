@@ -37,12 +37,30 @@ WHITE = (240, 246, 252)
 
 FONT_PATH = "/usr/share/fonts/truetype/dejavu/DejaVuSansMono.ttf"
 FONT_BOLD = "/usr/share/fonts/truetype/dejavu/DejaVuSansMono-Bold.ttf"
-FONT = ImageFont.truetype(FONT_PATH, 21)
 FONT_SM = ImageFont.truetype(FONT_PATH, 16)
 FONT_CAP = ImageFont.truetype(FONT_PATH, 17)
 FONT_TITLE = ImageFont.truetype(FONT_BOLD, 58)
 FONT_SUB = ImageFont.truetype(FONT_PATH, 24)
 FONT_STAT = ImageFont.truetype(FONT_BOLD, 44)
+
+_FONT_CACHE = {}
+
+
+def mono(size):
+    if size not in _FONT_CACHE:
+        _FONT_CACHE[size] = ImageFont.truetype(FONT_PATH, size)
+    return _FONT_CACHE[size]
+
+
+def choose_size(lines, avail_h):
+    """Largest mono size at which every line fits the frame, both across and down."""
+    for size in range(36, 15, -1):
+        f = mono(size)
+        lh = round(size * 1.34)
+        rows = sum(1 if f.getlength(l) <= W - 2 * PAD else 2 for l in lines)
+        if rows * lh <= avail_h:
+            return size, lh
+    return 16, 21
 
 PAD = 30
 CHROME_H = 52
@@ -136,17 +154,23 @@ def frame_with_scene(cmd_chars, lines, caption=None, title="carrydesk — freshl
     img = Image.new("RGB", (W, H), BG)
     d = ImageDraw.Draw(img)
     chrome(d, title)
-    y = TOP
+    avail = (CAP_TOP - 14 - TOP) - (34 if cmd_chars else 0)
+    size, lh = choose_size(lines or [""], max(120, avail))
+    body_font = mono(size)
+    rows = sum(1 if body_font.getlength(l) <= W - 2 * PAD else 2 for l in (lines or [""]))
+    slack = max(0, avail - rows * lh)
+    y = TOP + min(64, slack // 3)
     if cmd_chars:
-        d.text((PAD, y), "$ ", font=FONT, fill=GREEN)
-        d.text((PAD + 26, y), cmd_chars, font=FONT, fill=WHITE)
-        y += LH
+        cmd_font = mono(min(size, 24))
+        d.text((PAD, y), "$ ", font=cmd_font, fill=GREEN)
+        d.text((PAD + round(size * 1.25), y), cmd_chars, font=cmd_font, fill=WHITE)
+        y += round(min(size, 24) * 1.34)
     for line in lines:
-        for part in wrap(line, FONT):
-            if y > CAP_TOP - 40:
+        for part in wrap(line, body_font):
+            if y > CAP_TOP - 34:
                 break
-            d.text((PAD, y), part, font=FONT, fill=color_for(line))
-            y += LH
+            d.text((PAD, y), part, font=body_font, fill=color_for(line))
+            y += lh
     caption_block(d, caption)
     return img
 
@@ -166,15 +190,15 @@ def title_card(markets):
     chrome(d, "carrydesk")
     d.text((PAD, 210), "CarryDesk", font=FONT_TITLE, fill=WHITE)
     d.text((PAD, 292), "Funding-ranked perps on dreamDEX", font=FONT_SUB, fill=ACCENT)
-    d.text((PAD, 336), "Ranks every market by the funding it actually settled, then sizes", font=FONT, fill=DIM)
-    d.text((PAD, 366), "against one cross-margined account.", font=FONT, fill=DIM)
+    d.text((PAD, 336), "Ranks every market by the funding it actually settled, then sizes", font=mono(22), fill=DIM)
+    d.text((PAD, 366), "against one cross-margined account.", font=mono(22), fill=DIM)
     bits = [(str(markets or "?"), "perp markets"), ("7d", "funding lookback"), ("1", "margin bank")]
     x = PAD
     for big, small in bits:
         d.text((x, 452), big, font=FONT_STAT, fill=WHITE)
         d.text((x, 508), small, font=FONT_SM, fill=DIM)
         x += 240
-    d.text((PAD, 640), "github.com/anakbaik99/dreamdex-carry-desk", font=FONT, fill=DIM)
+    d.text((PAD, 640), "github.com/anakbaik99/dreamdex-carry-desk", font=mono(22), fill=DIM)
     return img
 
 
@@ -183,9 +207,9 @@ def end_card():
     d = ImageDraw.Draw(img)
     chrome(d, "carrydesk")
     d.text((PAD, 216), "No order was placed here.", font=FONT_TITLE, fill=WHITE)
-    d.text((PAD, 300), "run is dry unless --live is passed; live orders are logged to data/ledger.jsonl.", font=FONT, fill=DIM)
-    d.text((PAD, 336), "The real orders — open, TP/SL, and the trigger that closed it — are on chain:", font=FONT, fill=DIM)
-    d.text((PAD, 372), "docs/EVIDENCE.md", font=FONT, fill=ACCENT)
+    d.text((PAD, 300), "run is dry unless --live is passed; live orders are logged to data/ledger.jsonl.", font=mono(22), fill=DIM)
+    d.text((PAD, 336), "The real orders — open, TP/SL, and the trigger that closed it — are on chain:", font=mono(22), fill=DIM)
+    d.text((PAD, 372), "docs/EVIDENCE.md", font=mono(22), fill=ACCENT)
     d.text((PAD, 460), "github.com/anakbaik99/dreamdex-carry-desk", font=FONT_SUB, fill=WHITE)
     d.text((PAD, 506), "@DreamDEXSomnia", font=FONT_SUB, fill=GREEN)
     return img
@@ -205,10 +229,24 @@ def scan_scene_lines(rows_shown=8):
     return out
 
 
-STATUS_CAPTION = [
-    "These five shorts were opened by this account's earlier sessions — nothing here is a live order.",
-    "1337% is gross notional ÷ equity on one cross-margined margin bank; funding received is negative (−68.07 USDso / 7d).",
-]
+def status_caption():
+    """Build the status frame caption from the captured numbers, never from constants."""
+    lines = load("status")
+    gross = pct = funding = None
+    for line in lines:
+        m = re.search(r"gross exposure\s*:\s*([\d.]+)\s*\((\d+)% of equity\)", line)
+        if m:
+            gross, pct = m.group(1), m.group(2)
+        m = re.search(r"funding received\s*:\s*(-?[\d.]+)", line)
+        if m:
+            funding = m.group(1)
+    shorts = sum(1 for l in lines if re.match(r"^  [A-Z0-9]+-PERP\s+short\s", l))
+    if not (gross and pct and funding is not None):
+        return ["Captured from this account's existing book — nothing here is a live order."]
+    return [
+        f"These {shorts} shorts were opened by this account's earlier sessions — nothing here is a live order.",
+        f"{pct}% is gross notional ({gross} USDso) ÷ equity on one cross-margined margin bank; funding received is {funding} USDso / 7d.",
+    ]
 
 
 def main():
@@ -221,7 +259,7 @@ def main():
     scenes = [
         {"cmd": "node src/cli.mjs doctor", "lines": load("doctor"), "hold": 3.2, "caption": None},
         {"cmd": "node src/cli.mjs scan", "lines": scan_scene_lines(), "hold": 4.2, "caption": None},
-        {"cmd": "node src/cli.mjs status", "lines": load("status"), "hold": 5.0, "caption": STATUS_CAPTION},
+        {"cmd": "node src/cli.mjs status", "lines": load("status"), "hold": 5.0, "caption": status_caption()},
         {"cmd": "node src/cli.mjs plan", "lines": load("plan"), "hold": 4.0, "caption": None},
         {"cmd": "node src/cli.mjs run", "lines": load("run", keep=9), "hold": 3.4, "caption": None},
     ]
@@ -230,7 +268,7 @@ def main():
     LINE = 0.115  # seconds between revealed output lines
 
     timeline = []
-    TITLE_F, END_F = 2.8, 4.4
+    TITLE_F, END_F = 3.2, 5.6
     timeline.append((int(TITLE_F * FPS), "title", None))
     for sc in scenes:
         total = len(sc["cmd"]) * TYPE + len(sc["lines"]) * LINE + sc["hold"]
