@@ -164,6 +164,7 @@ async function cmdDoctor() {
   console.log(`  perp markets   : ${out.markets}`);
   console.log(`  open positions : ${out.positions}`);
   console.log(`  account        : ${CONFIG.account || '(unset)'}`);
+  console.log(`  workspace      : ${CONFIG.workspace}`);
   for (const [k, v] of Object.entries(out.adapters)) console.log(`  adapter ${pad(k, 22)}: ${v}`);
 }
 

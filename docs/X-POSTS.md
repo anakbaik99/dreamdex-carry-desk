@@ -50,8 +50,8 @@ Every number is checkable against this repository:
 | claim | source |
 |---|---|
 | funding settled positive in nearly every interval | `node src/cli.mjs scan`, and the measured rates in `docs/ARCHITECTURE.md` |
-| LIT-PERP long, 3,052 USDso, entry 3.0129 | `docs/EVIDENCE.md`, cycle 1 |
-| TP 3.1032 fired, +89.60 USDso | `docs/EVIDENCE.md`, cycle 2 |
+| LIT-PERP long, 3,052 USDso, entry 3.0129 | `docs/EVIDENCE.md`, step 1 |
+| TP 3.1032 fired, +89.60 USDso | `docs/EVIDENCE.md`, step 2 |
 | open tx `0x2aa8406c…` / close tx `0x5d8fab86…` | `docs/EVIDENCE.md`, transaction hashes |
 | cross-margined, one margin bank per account | `docs/ARCHITECTURE.md` |
 

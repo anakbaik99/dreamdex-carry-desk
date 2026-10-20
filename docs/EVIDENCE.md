@@ -3,8 +3,10 @@
 All activity is on **Somnia Tokyo testnet** — dreamDEX perps, chain **50383**, app region `tokyo`,
 collateral `USDso`. Testnet paper money.
 
-Two complete cycles are recorded below, including the close path: the take-profit that this tool
-attached was triggered by the venue and the position closed at +89.60 USDso.
+One complete lifecycle is recorded below: this tool opened a position, attached venue-side
+protection, and the venue's take-profit later closed it at +89.60 USDso. The tool's **own** close
+path — `run` closing a position that lost its funding edge — has not been exercised live, and
+nothing here should be read as proof of it.
 
 ## Transaction hashes
 
@@ -35,7 +37,7 @@ Returns `blockNumber: 0x1a96596` (27878806), `from` the smart wallet's owner, `t
 contract. The same call on `api.infra.testnet.somnia.network` (chain 50312) returns `null`, which is
 how the chain attribution was confirmed.
 
-## Cycle 1 — open
+## Step 1 — open
 
 Scan ranked 21 perp markets by realised funding over a 7-day window:
 
@@ -94,7 +96,30 @@ LIT  PENDING  trigger 3.1032   <- take profit, +3%
 tx 0x19cf0c18ee2782b31baa06e041a7a43a6c66e923991e1238faeb9d5a23f62781
 ```
 
-## Cycle 2 — the take-profit fires
+### The dialog's estimate and what was actually realised
+
+The protection dialog reported `est_profit=+115.84`. That number cannot be reproduced from chain
+state. At the TP trigger of 3.1032 and 1,008.8 LIT against an average entry of 3.01286, the maximum
+gross is **91.1350 USDso**. Back-solving 115.84 with the size fixed implies an entry of 2.98837,
+which never traded — the 1-minute candle series runs 3.0117 → 3.0308 → 3.0235 across the window, and
+the position's entry was 3.01286. Back-solving with the entry fixed implies 1,282.3 LIT, while
+`PerpPositionChange` never shows the position above 1,008.8 LIT.
+
+The estimate is therefore about 27% above the arithmetic maximum, and **the formula behind it is
+unexplained**. It is treated as a UI estimate, not a PnL forecast, and this tool does not use it.
+
+Realised PnL is fully explained. The trigger swept three price levels, so the average exit was
+3.10168 rather than 3.1032:
+
+```
+322.3 LIT @ 3.1022 + 644.5 LIT @ 3.1016 + 42.0 LIT @ 3.0988  ->  avg 3.10168
+1008.8 x (3.10168 - 3.01286) = 89.5967     (chain: +89.5992, difference is rounding)
+```
+
+That is 1.54 USDso below the theoretical gross at the trigger, entirely from exit slippage inside
+the trigger itself.
+
+## Step 2 — the take-profit fires
 
 At 23:38:30Z the venue triggered the take-profit the tool had attached:
 
@@ -118,11 +143,16 @@ attached — all three verifiable on chain.
 
 ## What this is not
 
-This is **not** a hedged carry strategy. A long with a 3% stop is a directional position that is
-paid to exist. At 33%/yr the funding is roughly 0.09%/day against a 3% stop, so price movement
-dominates PnL — as the result shows: +89.60 came from a 2.9% price move, not from funding. The
-honest description is *funding-tilted*, not *carry without risk*. A hedged version would need a
-second leg on the same underlying, which this venue does not currently offer as a perp pair.
+This is **not** a hedged carry strategy. A long with a 3% stop is a directional position that is paid
+to exist. At 33.43%/yr the funding is roughly 0.09%/day against a 3% stop, so price movement dominates
+PnL — as the result shows: +89.60 came from a 2.9% price move, not from funding. The honest
+description is *funding-tilted*, not *carry without risk*.
+
+For LIT there is no hedge leg: the venue lists LIT-PERP and no LIT spot market. The one pair on this
+venue that can be hedged end to end is **short BTC-PERP against long WBTC:USDso spot**, and it is not
+built. Measured 2026-10-20: WBTC:USDso quoted 81,374.5 / 81,390.8 against a BTC-PERP mark of 81,207.6
+(a −0.215% basis), and the **entire** WBTC:USDso ask book held 0.00984 WBTC — about $801 — so the
+hedge leg caps out near $800 notional against a book sized in thousands.
 
 ## Execution bugs found and fixed
 

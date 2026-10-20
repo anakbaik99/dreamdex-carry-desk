@@ -9,10 +9,17 @@ by realised funding yield, and holds the side that is being paid — with accoun
 exposure caps and a kill switch.
 
 **What this is not.** It is not a hedged carry book. Each leg is a directional position that happens
-to be paid to exist: at 30%/yr the funding is about 0.09%/day, while the stop sits 3% away, so price
-movement dominates PnL. The honest description is *funding-tilted*, not *risk-free carry*. Hedging
-would need a second leg on the same underlying, which this venue does not currently list as a perp
-pair.
+to be paid to exist: LIT settled at 33.43%/yr, about 0.09%/day, while its stop sits 3% away, so price
+movement dominates PnL. The one closed position made +89.60 USDso from a 2.9% price move, not from
+funding. The honest description is *funding-tilted*, not *risk-free carry*.
+
+**What a hedge would need.** For LIT there is no hedge leg: the venue lists LIT-PERP but no LIT spot
+market to offset it. One pair on this venue can be hedged end to end — **short BTC-PERP against long
+WBTC:USDso spot**, both settled in USDso on the same chain. Measured 2026-10-20: WBTC:USDso quoted
+81,374.5 / 81,390.8 (0.020% spread) against a BTC-PERP mark of 81,207.6, a basis of −0.215%, which
+would have to be netted against funding. The blocker is size: the entire WBTC:USDso ask book holds
+0.00984 WBTC, about $801, so a hedge leg caps out near $800 notional. This is a roadmap item — the
+two-leg sizing, the spot executor and the basis/funding netting are not built.
 
 Built for the **dreamDEX Perps Builder Bounty**, MVP track (bots and agents).
 
@@ -45,7 +52,18 @@ against the venue.
 
 ## How to run it
 
-Requirements:
+**No wallet, no browser.** The read plane is public. Ranking markets needs nothing but Node:
+
+```bash
+git clone https://github.com/anakbaik99/dreamdex-carry-desk
+cd dreamdex-carry-desk
+node src/cli.mjs scan        # ranks all 21 markets from the indexer alone
+```
+
+`scan` and `report` never touch the browser. `doctor` also works without a browser — it reports the
+indexer, the market count and whether the adapters are present.
+
+**With a wallet.** Orders and position reads need an account and a signed-in browser:
 
 - Node.js 20+
 - A dreamDEX account that can trade perps on Somnia Tokyo testnet
@@ -53,15 +71,19 @@ Requirements:
   `app.testnet.dreamdex.io` — orders are signed by the app's own Privy session, so the browser is
   the signer. See [`docs/RUNNING.md`](docs/RUNNING.md) for the exact setup.
 
+> **Keep the debugging port local.** Launch Chromium with
+> `--remote-debugging-address=127.0.0.1 --remote-debugging-port=9222` and never bind it to `0.0.0.0`
+> or expose it through a tunnel. The DevTools endpoint hands full control of a browser that holds a
+> logged-in trading session — anyone who reaches it can read the session and place orders. `MM_CDP`
+> defaults to `http://127.0.0.1:9222`.
+
 ```bash
-git clone https://github.com/anakbaik99/dreamdex-carry-desk
-cd dreamdex-carry-desk
 npm install
 npx playwright install chromium      # only needed if the browser is launched by Playwright
 
 export DD_ACCOUNT=0x...            # your dreamDEX smart wallet address
 
-node src/cli.mjs doctor            # indexer, markets, positions, execution adapters
+node src/cli.mjs doctor            # indexer, markets, positions, adapters, workspace
 node src/cli.mjs scan              # rank markets by realised funding
 node src/cli.mjs status            # current book and risk
 node src/cli.mjs plan              # what it would do next (dry)
@@ -85,7 +107,7 @@ All settings are environment variables with documented defaults; see `src/config
 | `DD_EXIT_CARRY_PCT` | `0` | close a position when its yield falls below this |
 | `DD_MAX_DRAWDOWN_PCT` | `15` | kill switch: stop opening below this PnL |
 | `DD_INDEXER` | Tokyo indexer | GraphQL endpoint |
-| `DD_WORKSPACE` | `~/scripts/dreamdex` | directory holding the order-ticket adapters |
+| `DD_WORKSPACE` | `./adapters` (repo) | directory holding the order-ticket adapters; override only to point at an external checkout |
 
 ## How the strategy works
 
@@ -99,7 +121,7 @@ All settings are environment variables with documented defaults; see `src/config
    margin bank, so the model sizes against free margin and a gross exposure cap, never per position
    in isolation. Sizing is the minimum of three limits — per-position cap, remaining gross budget,
    and the free-margin floor.
-4. **Never resizize, only close.** An amend on this venue is a cancel plus a place, which donates
+4. **Never resize, only close.** An amend on this venue is a cancel plus a place, which donates
    fees and queue position. When a market stops paying, the position is closed, not shrunk.
 5. **Protect immediately.** Every opened position gets venue-side TP/SL in the same cycle.
 
@@ -143,6 +165,6 @@ docs/EVIDENCE.md      live order evidence
 - **Cross-margin.** There is no per-position liquidation price on this venue. The risk model reports
   a book-level shock buffer instead.
 - **Execution is UI-driven.** The adapters drive the app's order ticket, so a cycle takes seconds per
-  order rather than milliseconds. That is a property of the venue's signing model on Tokyo, not a
-  design choice.
+  order rather than milliseconds. That is a limitation of how this build signs, not of the venue;
+  **Link a Bot** removes it ([`docs/EXECUTION.md`](docs/EXECUTION.md)).
 - **Testnet only.** Paper USDso. Nothing here touches mainnet funds.
